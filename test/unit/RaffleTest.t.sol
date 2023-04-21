@@ -74,6 +74,22 @@ contract RaffleTest is StdCheats, Test {
         assert(playerRecorded == PLAYER);
     }
 
+    // stateless fuzz testing, see:
+    // https://www.youtube.com/watch?v=juyY-CTolac
+    // https://book.getfoundry.sh/forge/fuzz-testing
+    function testFuzz_raffleRecordsPlayerWhenTheyEnter(address player, uint256 amount) public {
+        // Arrange
+        vm.assume(amount >= raffleEntranceFee);
+        vm.deal(player, amount);
+        vm.prank(player);
+        // Act
+        raffle.enterRaffle{value: amount}();
+        // Assert
+        address playerRecorded = raffle.getPlayer(0);
+        assertEq(playerRecorded, player);
+        assertEq(address(raffle).balance, amount);
+    }
+
     function testEmitsEventOnEntrance() public {
         // Arrange
         vm.prank(PLAYER);
